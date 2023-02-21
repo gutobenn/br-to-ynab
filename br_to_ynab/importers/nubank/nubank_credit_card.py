@@ -21,7 +21,7 @@ class NubankCreditCardData(DataImporter):
         payee = memo = card_transaction['description']
 
         # Customization: Set payee and memo according to the amount for transactions via Apple.
-        if 'Apple' == card_transaction['description']:
+        if 'Apple.Com/Bill' == card_transaction['description']:
             apple_subscriptions = {
                 3.50: "iCloud+",
                 11.90: "Apple Music",
