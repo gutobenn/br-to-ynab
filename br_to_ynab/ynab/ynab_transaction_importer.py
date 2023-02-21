@@ -46,6 +46,7 @@ class YNABTransactionImporter:
             transaction['amount'],
             payee_name=transaction['payee'],
             import_id=transaction['transaction_id'],
+            memo=transaction["memo"]
         )
 
     def _filter_transaction(self, transaction: Transaction) -> bool:
