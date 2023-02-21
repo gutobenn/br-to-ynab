@@ -1,8 +1,8 @@
-pynubank==2.14.0
-git+git://github.com/andreroggeri/pybradesco.git@main
+pynubank==2.21.1
+git+https://github.com/andreroggeri/pybradesco.git@80450d483dac1e6cde02bd9520ed90569483ecc1
 ynab_sdk==0.2.4
 inquirer==2.7.0
-playwright==1.10.0
+playwright==1.30.0
 
 pytest==6.2.3
 pytest-cov==2.11.1
