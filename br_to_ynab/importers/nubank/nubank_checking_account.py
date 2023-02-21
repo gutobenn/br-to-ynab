@@ -1,18 +1,19 @@
 from pynubank import Nubank
 
-from br_to_ynab.importers.data_importer import DataImporter
-from br_to_ynab.importers.transaction import Transaction
-from br_to_ynab.util import deep_get
+from importers.data_importer import DataImporter
+from importers.transaction import Transaction
+from importers.util import deep_get
 
 OUTFLOW_EVENT_TYPES = (
     'TransferOutEvent',
+    'PixTransferOutEvent',
     'TransferOutReversalEvent',
     'BarcodePaymentEvent',
     'DebitPurchaseEvent',
     'DebitPurchaseReversalEvent',
     'BillPaymentEvent',
     'DebitWithdrawalFeeEvent',
-    'DebitWithdrawalEvent'
+    'DebitWithdrawalEvent',
 )
 
 
@@ -47,8 +48,22 @@ class NubankCheckingAccountData(DataImporter):
             'BarcodePaymentEvent': 'detail',
             'TransferOutEvent': 'destinationAccount.name',
             'TransferInEvent': 'originAccount.name',
+            'PixTransferOutEvent': 'destinationAccount.name',
+            'PixTransferInEvent': 'originAccount.name',
             'BillPaymentEvent': 'title',
         }
+        
+        # Customizacao Pix
+        if account_transaction['__typename'] == 'PixTransferOutEvent':
+            payee, detail = account_transaction['detail'].split(u'\n')
+            account_transaction['destinationAccount'] = {'name': payee}
+        elif account_transaction['__typename'] in [ 'PixTransferInEvent', 'PixTransferOutReversalEvent' ]:
+            try:
+                payee, detail = account_transaction['detail'].split(u'\n')
+            except ValueError as e:
+                payee = 'Unknown'
+                detail = account_transaction['detail']    
+            account_transaction['originAccount'] = {'name': payee}
 
         field = transaction_type_map.get(account_transaction['__typename'])
         if field:

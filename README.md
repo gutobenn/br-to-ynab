@@ -1,4 +1,12 @@
 # br-to-ynab
+
+## Como reconfigurar certificado
+1. Abrir terminal dentro nesta pasta e rodar o comando `pynubank`.
+2. Depois de gerar o certificado (cert.p12), rodar o comando `base64 -i cert.p12 -o cert_encoded.txt`
+3. Copiar o conteúdo do cert_encoded.txt para a variável dentro do arquivo br-to-ynab/br-to-ynab.json, e em seguida excluir o arquivo cert_encoded.txt
+4. Rodar o script e checar se carregou certinho.
+
+
 [![codecov](https://codecov.io/gh/andreroggeri/br-to-ynab/branch/main/graph/badge.svg?token=PK9LFN24FE)](https://codecov.io/gh/andreroggeri/br-to-ynab)
 
 Sincronize seus gastos dos seus bancos para o YNAB automaticamente (Sucessor do [nubank-sync-ynab](https://github.com/andreroggeri/nubank-sync-ynab))

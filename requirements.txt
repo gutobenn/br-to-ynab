@@ -1,4 +1,4 @@
-pynubank==2.11.2
+pynubank==2.14.0
 git+git://github.com/andreroggeri/pybradesco.git@main
 ynab_sdk==0.2.4
 inquirer==2.7.0

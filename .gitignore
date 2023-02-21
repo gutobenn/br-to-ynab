@@ -105,3 +105,7 @@ ENV/
 
 # Config file
 **/br-to-ynab.json
+**/cert.p12
+
+# macOS
+**/.DS_Store

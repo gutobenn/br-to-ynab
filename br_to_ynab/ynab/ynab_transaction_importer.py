@@ -4,8 +4,22 @@ from typing import List
 from ynab_sdk import YNAB
 from ynab_sdk.api.models.requests.transaction import TransactionRequest
 
-from br_to_ynab.importers.data_importer import DataImporter
-from br_to_ynab.importers.transaction import Transaction
+from typing import TypedDict, Iterable
+import abc
+
+class Transaction(TypedDict):
+    transaction_id: str
+    account_id: str
+    payee: str
+    amount: int
+    date: str
+
+class DataImporter(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def get_data(self) -> Iterable[Transaction]:
+        raise NotImplementedError
+    
 
 
 class YNABTransactionImporter:
@@ -38,3 +52,4 @@ class YNABTransactionImporter:
         transaction_date = datetime.strptime(transaction['date'], '%Y-%m-%d')
 
         return transaction_date >= self.starting_date
+
