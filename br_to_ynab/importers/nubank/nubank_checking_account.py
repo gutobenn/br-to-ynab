@@ -5,19 +5,6 @@ from importers.data_importer import DataImporter
 from importers.transaction import Transaction
 from importers.util import deep_get
 
-OUTFLOW_EVENT_TYPES = (
-    'TransferOutEvent',
-    'PixTransferOutEvent',
-    'TransferOutReversalEvent',
-    'BarcodePaymentEvent',
-    'DebitPurchaseEvent',
-    'DebitPurchaseReversalEvent',
-    'BillPaymentEvent',
-    'DebitWithdrawalFeeEvent',
-    'DebitWithdrawalEvent',
-)
-
-
 class NubankCheckingAccountData(DataImporter):
 
     def __init__(self, nubank: Nubank, account_id: str):
@@ -25,12 +12,13 @@ class NubankCheckingAccountData(DataImporter):
         self.account_id = account_id
 
     def get_data(self):
-        transactions = self.nu.get_account_statements()
-        transactions = filter(self._filter_transaction, transactions)
-        transactions = map(self._account_data_to_transaction, transactions)
-        return transactions
+        transactions = self.nu.get_account_feed_paginated()['edges']
+
+        return map(self._account_data_to_transaction, transactions)
 
     def _account_data_to_transaction(self, account_transaction: dict) -> Transaction:
+        account_transaction = account_transaction['node']
+        
         return {
             'transaction_id': account_transaction['id'],
             'account_id': self.account_id,
@@ -42,47 +30,19 @@ class NubankCheckingAccountData(DataImporter):
 
     def _get_transaction_amount(self, account_transaction: dict) -> int:
         amount = int(account_transaction['amount'] * 1000)
-        if account_transaction['__typename'] in OUTFLOW_EVENT_TYPES:
+        if account_transaction['kind'] != 'POSITIVE':
             amount *= -1
         return amount
 
     def _get_payee_from_acct_transaction(self, account_transaction: dict) -> str:
-        transaction_type_map = {
-            'BarcodePaymentEvent': 'detail',
-            'TransferOutEvent': 'destinationAccount.name',
-            'TransferInEvent': 'originAccount.name',
-            'PixTransferOutEvent': 'destinationAccount.name',
-            'PixTransferInEvent': 'originAccount.name',
-            'BillPaymentEvent': 'title',
-        }
+        # TODO implementar devolucao pix?
 
-        # Customizacao Pix
-        if account_transaction['__typename'] == 'PixTransferOutEvent':
+        if account_transaction['title'] == 'Pagamento da fatura':
+            payee = 'Nubank'
+        elif account_transaction['title'] == 'Compra no débito':
+            payee = re.sub(r'^Compra no débito ', '', account_transaction['detail'])
+            payee, detail = payee.split(u'\n')
+        else:
             payee, detail = account_transaction['detail'].split(u'\n')
-            account_transaction['destinationAccount'] = {'name': payee}
-        elif account_transaction['__typename'] in [ 'PixTransferInEvent', 'PixTransferOutReversalEvent' ]:
-            try:
-                payee, detail = account_transaction['detail'].split(u'\n')
-            except ValueError as e:
-                payee = 'Unknown'
-                detail = account_transaction['detail']    
-            account_transaction['originAccount'] = {'name': payee}
-        
-        # Customization: remove prefix and suffix for debit transactions
-        if 'destinationAccount' in account_transaction and account_transaction['destinationAccount']['name'].startswith('Compra no débito '):
-            destinationAccountName = account_transaction['destinationAccount']['name']
-            # remove "Compra no débito " prefix
-            string = re.sub(r'^Compra no débito ', '', string)
-            # remove amount suffix
-            string = re.sub(r' - R\$ \d+,\d{2}$', '', string)
-
-            account_transaction['destinationAccount']['name'] = destinationAccountName
-        
-        field = transaction_type_map.get(account_transaction['__typename'])
-        if field:
-            return deep_get(account_transaction, field)
-
-        return f'{account_transaction["title"]} {account_transaction["detail"]}'
-
-    def _filter_transaction(self, account_transaction: dict) -> bool:
-        return account_transaction['__typename'] != 'PixTransferScheduledEvent'
+            
+        return payee
