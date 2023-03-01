@@ -43,6 +43,9 @@ class NubankCheckingAccountData(DataImporter):
             payee = re.sub(r'^Compra no débito ', '', account_transaction['detail'])
             payee, detail = payee.split(u'\n')
         else:
-            payee, detail = account_transaction['detail'].split(u'\n')
+            try:
+                payee, detail = account_transaction['detail'].split(u'\n')
+            except ValueError as e:
+                payee = account_transaction['detail']
             
         return payee
