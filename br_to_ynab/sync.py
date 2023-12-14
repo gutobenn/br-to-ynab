@@ -1,5 +1,6 @@
 import base64
 import json
+import requests
 from typing import TypedDict, List
 
 from pynubank import Nubank
@@ -9,6 +10,8 @@ from ynab_sdk.utils.configurations.cached import CachedConfig
 
 from importers.nubank.nubank_checking_account import NubankCheckingAccountData
 from importers.nubank.nubank_credit_card import NubankCreditCardData
+from importers.belvo.belvo_checking_account import BelvoCheckingAccountData
+from importers.belvo.belvo_credit_card import BelvoCreditCardData
 from importers.util import find_budget_by_name, find_account_by_name
 from ynab.ynab_transaction_importer import YNABTransactionImporter
 
@@ -38,6 +41,7 @@ if __name__ == '__main__':
 
     ynab_importer = YNABTransactionImporter(ynab, budget.id, importer_config['start_import_date'])
 
+    """
     with open('cert.p12', 'wb') as f:
         cert_content = base64.b64decode(importer_config['nubank_cert'])
         f.write(cert_content)
@@ -57,6 +61,19 @@ if __name__ == '__main__':
             account = find_account_by_name(ynab_accounts, importer_config['nubank_checking_account'])
             nu_checking_account = NubankCheckingAccountData(nu, account.id)
             ynab_importer.get_transactions_from(nu_checking_account)
+    """
+
+    if 'Belvo' in importer_config['banks']:
+
+        if importer_config['nubank_card_account']:
+            account = find_account_by_name(ynab_accounts, importer_config['nubank_card_account'])
+            belvo_card_data = BelvoCreditCardData(account.id, importer_config['belvo_auth'], importer_config['belvo_link'], importer_config['belvo_card_account'], importer_config['start_import_date']) 
+            ynab_importer.get_transactions_from(belvo_card_data)
+
+        if importer_config['nubank_checking_account']:
+            account = find_account_by_name(ynab_accounts, importer_config['nubank_card_account'])
+            belvo_checking_data = BelvoCheckingAccountData(account.id, importer_config['belvo_auth'], importer_config['belvo_link'], importer_config['belvo_checking_account'], importer_config['start_import_date']) 
+            ynab_importer.get_transactions_from(belvo_checking_data)
 
     response = ynab_importer.save()
     print(ynab_importer.transactions)
