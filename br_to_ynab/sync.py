@@ -12,6 +12,8 @@ from importers.nubank.nubank_checking_account import NubankCheckingAccountData
 from importers.nubank.nubank_credit_card import NubankCreditCardData
 from importers.belvo.belvo_checking_account import BelvoCheckingAccountData
 from importers.belvo.belvo_credit_card import BelvoCreditCardData
+from importers.pluggy.pluggy_checking_account import PluggyCheckingAccountData
+from importers.pluggy.pluggy_credit_card import PluggyCreditCardData
 from importers.util import find_budget_by_name, find_account_by_name
 from ynab.ynab_transaction_importer import YNABTransactionImporter
 
@@ -61,7 +63,6 @@ if __name__ == '__main__':
             account = find_account_by_name(ynab_accounts, importer_config['nubank_checking_account'])
             nu_checking_account = NubankCheckingAccountData(nu, account.id)
             ynab_importer.get_transactions_from(nu_checking_account)
-    """
 
     if 'Belvo' in importer_config['banks']:
 
@@ -71,9 +72,28 @@ if __name__ == '__main__':
             ynab_importer.get_transactions_from(belvo_card_data)
 
         if importer_config['nubank_checking_account']:
-            account = find_account_by_name(ynab_accounts, importer_config['nubank_card_account'])
+            account = find_account_by_name(ynab_accounts, importer_config['nubank_checking_account'])
             belvo_checking_data = BelvoCheckingAccountData(account.id, importer_config['belvo_auth'], importer_config['belvo_link'], importer_config['belvo_checking_account'], importer_config['start_import_date']) 
             ynab_importer.get_transactions_from(belvo_checking_data)
+
+    response = ynab_importer.save()
+    print(ynab_importer.transactions)
+    print(response)
+
+    """
+
+    if 'Pluggy' in importer_config['banks']:
+
+        if importer_config['nubank_card_account']:
+            account = find_account_by_name(ynab_accounts, importer_config['nubank_card_account'])
+            pluggy_card_data = PluggyCreditCardData(account.id, importer_config['pluggy_client_id'], importer_config['pluggy_client_secret'], importer_config['pluggy_item_id'], importer_config['pluggy_card_account'], importer_config['start_import_date']) 
+            ynab_importer.get_transactions_from(pluggy_card_data)
+
+        if importer_config['nubank_checking_account']:
+            account = find_account_by_name(ynab_accounts, importer_config['nubank_checking_account'])
+            pluggy_checking_data = PluggyCheckingAccountData(account.id, importer_config['pluggy_client_id'], importer_config['pluggy_client_secret'], importer_config['pluggy_item_id'], importer_config['pluggy_checking_account'], importer_config['start_import_date']) 
+            print(pluggy_checking_data)
+            ynab_importer.get_transactions_from(pluggy_checking_data)
 
     response = ynab_importer.save()
     print(ynab_importer.transactions)
