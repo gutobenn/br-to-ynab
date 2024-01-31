@@ -39,7 +39,11 @@ class PluggyCreditCardData(DataImporter):
 
     def _card_data_to_transaction(self, card_transaction: dict) -> Transaction:
         payee = memo = card_transaction['description']
-        amount = int(card_transaction['amount'] * 1000) 
+
+        if card_transaction['amountInAccountCurrency'] is not None:
+            amount = int(card_transaction['amountInAccountCurrency'] * 1000)
+        else:
+            amount = int(card_transaction['amount'] * 1000) 
 
         # Customization: Set payee and memo according to the amount for transactions via Apple.
         if 'Apple.Com/Bill' == card_transaction['description']:

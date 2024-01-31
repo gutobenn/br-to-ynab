@@ -54,7 +54,11 @@ class PluggyCheckingAccountData(DataImporter):
         return data_to_test
 
     def _get_transaction_amount(self, account_transaction: dict) -> int:
-        amount = int(account_transaction['amount'] * 1000)
+        if account_transaction['amountInAccountCurrency'] is not None:
+            amount = int(account_transaction['amountInAccountCurrency'] * 1000)
+        else:
+            amount = int(account_transaction['amount'] * 1000) 
+
         return amount
 
     def _get_payee_from_acct_transaction(self, account_transaction: dict) -> str:
