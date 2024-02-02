@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
         if importer_config['nubank_card_account']:
             account = find_account_by_name(ynab_accounts, importer_config['nubank_card_account'])
-            pluggy_card_data = PluggyCreditCardData(account.id, importer_config['pluggy_client_id'], importer_config['pluggy_client_secret'], importer_config['pluggy_item_id'], importer_config['pluggy_card_account'], importer_config['start_import_date']) 
+            pluggy_card_data = PluggyCreditCardData(account.id, importer_config['pluggy_client_id'], importer_config['pluggy_client_secret'], importer_config['pluggy_item_id'], importer_config['pluggy_card_account'], importer_config['start_import_date'], importer_config['shared_credit_card_number']) 
             ynab_importer.get_transactions_from(pluggy_card_data)
 
         if importer_config['nubank_checking_account']:

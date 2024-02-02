@@ -6,13 +6,14 @@ from importers.transaction import Transaction
 
 class PluggyCreditCardData(DataImporter):
 
-    def __init__(self, account_id: str, pluggy_client_id: str, pluggy_client_secret: str, pluggy_item_id: str, pluggy_account: str, start_import_date: str):
+    def __init__(self, account_id: str, pluggy_client_id: str, pluggy_client_secret: str, pluggy_item_id: str, pluggy_account: str, start_import_date: str, sharedCreditCard: str):
         self.account_id = account_id
         self.pluggy_client_id = pluggy_client_id
         self.pluggy_client_secret = pluggy_client_secret
         self.pluggy_item_id = pluggy_item_id
         self.pluggy_account = pluggy_account
         self.start_import_date = start_import_date
+        self.shared_credit_card = sharedCreditCard
 
     def get_data(self) -> Iterable[Transaction]:
         # Get an api key from pluggy
@@ -55,6 +56,11 @@ class PluggyCreditCardData(DataImporter):
                 2690: "Erol Singers Studio", # $26.90
                 27990: "Elsa Premium" # $279.90 
             }
+
+            payee = memo = apple_subscriptions.get(card_transaction['amount'], card_transaction['description'])
+
+        if card_transaction['creditCardMetadata']['cardNumber'] == self.shared_credit_card:
+            memo = 'CARTÃO COLETIVO - ' + memo
 
         return {
             'transaction_id': card_transaction['id'],
